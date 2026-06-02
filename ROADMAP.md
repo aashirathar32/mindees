@@ -46,13 +46,24 @@ See [STATUS.md](./STATUS.md) for current maturity.
     `createNativeCommandBackend()` that implements the Helix `HostBackend`
     contract, turning the element tree + fine-grained reactive updates into a
     command stream a native host can replay. Event handlers cross as stable
-    handler ids, never as serialized functions. Reference SwiftUI/Compose host
-    stubs in `examples/native-hosts/`. (This is the path, not yet on-screen pixels.)
-  - [ ] **Phase 8B — iOS host MVP**
-    A compiled UIKit/SwiftUI host that replays the command stream to real views.
-  - [ ] **Phase 8C — Android host MVP**
-    A compiled Jetpack Compose/View host that replays the command stream.
-  - [ ] **Phase 8D — Native example app**
+    handler ids, never as serialized functions. (This is the path, not yet pixels.)
+  - [x] **Phase 8B — Native host conformance contract + reference host** ✅
+    `createReferenceHost()` — the inverse of the backend: it consumes the command
+    stream, reconstructs the view tree, and **strictly validates** it (throws on
+    any malformed/leaking sequence). It is the executable spec a real native host
+    implements, and piping the backend through it proves the stream is valid and
+    non-leaking end to end. The UIKit (iOS) and Android-View reference host projects
+    in `examples/native-hosts/` implement these semantics.
+  - [ ] **Phase 8C — iOS host MVP** _(toolchain-gated: needs macOS/Xcode)_
+    A real Swift package (`examples/native-hosts/ios/`) is **authored** — UIKit
+    renderer + a device-free, `swift test`-able apply/validation core implementing
+    the 8B contract. Remaining: build + run it on a device and wire the JS↔native
+    bridge (the maintainers have no macOS toolchain to verify it).
+  - [ ] **Phase 8D — Android host MVP** _(toolchain-gated: needs the Android SDK)_
+    A real Gradle/Android library (`examples/native-hosts/android/`) is **authored**
+    — `android.view` renderer + a `./gradlew test`-able core. Remaining: build + run
+    on a device and wire the bridge (no Android SDK available to verify it).
+  - [ ] **Phase 8E — Native example app**
     An end-to-end runnable native example proving the full path.
 - [ ] **Phase 9 — `@mindees/updates` (Pulse): signed differential OTA + SDUI**
   Manifest, binary diff, Ed25519 signing, atomic rollback, reference server.
