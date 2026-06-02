@@ -214,39 +214,43 @@ function bindReactiveChild<N>(
   parent: N,
   initialAnchor: N | null,
 ): N[] {
-  let current: N[] = []
-  let first = true
+  // Pin the region's slot with a persistent, invisible empty-text marker, and
+  // always (re)mount content immediately BEFORE it. This keeps the region's
+  // exact position across empty↔content transitions (an empty region previously
+  // collapsed — its content reappeared at the parent's end, breaking the
+  // `() => cond() ? <X/> : null` pattern when the region had following siblings)
+  // and keeps adjacent regions in order. The marker serializes to '' so it is
+  // invisible in output.
+  const marker = backend.createText('')
+  backend.insert(parent, marker, initialAnchor)
+
+  // `nodes` is a STABLE, live array — the region's current content followed by
+  // the slot marker — mutated in place on every run. Returning the same array
+  // reference (not a one-time snapshot) means a caller that captures it once
+  // (e.g. render()'s root disposer) always removes the CURRENT content, not the
+  // first-run nodes.
+  const nodes: N[] = [marker]
+  let content: N[] = []
   effect(() => {
     const value = accessor()
     untrack(() => {
       // Fast path: single existing text node + new text-like value → patch.
       if (
-        current.length === 1 &&
-        current[0] !== undefined &&
-        backend.isText(current[0]) &&
+        content.length === 1 &&
+        content[0] !== undefined &&
+        backend.isText(content[0]) &&
         (typeof value === 'string' || typeof value === 'number')
       ) {
-        backend.setText(current[0], String(value))
+        backend.setText(content[0], String(value))
         return
       }
-      // First run uses the caller's anchor; later runs reuse the region's slot.
-      const anchor = first
-        ? initialAnchor
-        : current.length > 0
-          ? nextSiblingAfter(backend, current)
-          : initialAnchor
-      for (const n of current) backend.remove(parent, n)
-      current = mountNode(value, backend, parent, anchor)
-      first = false
+      for (const n of content) backend.remove(parent, n)
+      content = mountNode(value, backend, parent, marker)
+      nodes.length = 0
+      nodes.push(...content, marker)
     })
   })
-  return current
-}
-
-/** The sibling immediately after the last node of `group` (insertion anchor). */
-function nextSiblingAfter<N>(backend: HostBackend<N>, group: N[]): N | null {
-  const last = group[group.length - 1]
-  return last !== undefined ? backend.nextSibling(last) : null
+  return nodes
 }
 
 export type { MaybeReactive }
