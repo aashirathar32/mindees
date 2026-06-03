@@ -5,7 +5,8 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const defaultRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const root = resolve(process.env.VALIDATE_EXPORTS_ROOT ?? defaultRoot)
 const packagesRoot = join(root, 'packages')
 const packageDirs = readdirSync(packagesRoot)
   .map((name) => join(packagesRoot, name))
@@ -78,11 +79,13 @@ function collectExportSpecifiers(packageName, exportsField) {
   if (typeof exportsField === 'string') return [packageName]
   if (!isPlainObject(exportsField)) return []
 
+  const keys = Object.keys(exportsField)
   const specifiers = []
-  for (const key of Object.keys(exportsField)) {
+  for (const key of keys) {
     if (key === '.') specifiers.push(packageName)
     else if (key.startsWith('./')) specifiers.push(`${packageName}/${key.slice(2)}`)
   }
+  if (specifiers.length === 0 && keys.length > 0) specifiers.push(packageName)
   return specifiers.sort()
 }
 
