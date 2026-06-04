@@ -87,8 +87,11 @@ See [STATUS.md](./STATUS.md) for current maturity.
       API 35 emulator and runs `:mindees-example-app:connectedDebugAndroidTest`,
       proving the example Activity renders native `TextView`/`Button` widgets and
       handles a native press through the embedded QuickJS bridge.
-    - [ ] Physical-device smoke execution for the Android app.
-    - [ ] iOS embedded-runtime bridge/example parity.
+    - [x] **Phase 8F-C — iOS embedded-runtime bridge parity.** The Swift package
+      includes `MindeesRuntimeBridge` + `JavaScriptCoreMindeesRuntime`; CI runs the
+      model bridge tests via `swift test` and an iOS Simulator smoke test that presses
+      a native `UIButton` and observes the JS-driven label update.
+    - [ ] Physical-device smoke execution for the Android/iOS example bridges.
 - **Phase 9 — `@mindees/updates` (Pulse): signed differential OTA + SDUI**
   Ship new JS + assets to installed apps with no app-store release, safely.
   Sub-phased so each step is real and tested:

@@ -119,6 +119,6 @@ command protocol used by `@mindees/renderer`.
 - 🧪 **Phase 8F-A/B** — Android example app with an embedded QuickJS runtime and a
   real JS↔native command bridge. CI unit-tests the bridge contract, assembles the
   APK, and runs an emulator-connected smoke test against the live Activity.
-  Physical-device execution and the iOS equivalent remain future Phase 8F work.
+  Physical-device execution remains future Phase 8F work.
 - The tag→view mapping and prop application are an intentional MVP — extend
   `AndroidViewRenderer` for a real design system.

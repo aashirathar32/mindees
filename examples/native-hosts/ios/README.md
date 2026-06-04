@@ -1,13 +1,12 @@
-# MindeesNativeHost — iOS reference host (Swift Package)
+# MindeesNativeHost - iOS reference host (Swift Package)
 
-> ✅ **CI-verified: compiles + conformance core + renders on an iOS Simulator.** A
-> GitHub Actions macOS runner
-> ([`.github/workflows/native-ios.yml`](../../../.github/workflows/native-ios.yml))
+> **CI-verified: compiles, passes conformance, renders on an iOS Simulator, and
+> exercises an embedded JavaScriptCore JS<->native bridge.** A GitHub Actions macOS
+> runner ([`.github/workflows/native-ios.yml`](../../../.github/workflows/native-ios.yml))
 > runs `swift build` + `swift test`, compiles the package (incl. `UIKitRenderer`) for
-> the iOS SDK, and runs `UIKitRenderTests` on an **iOS Simulator** (`xcodebuild test`)
-> asserting the real `UIView` hierarchy — every change. What is **not** yet verified:
-> a full app on a physical device over an embedded JS engine / JS↔native bridge
-> (Phase 8F). Not a production host.
+> the iOS SDK, and runs `UIKitRenderTests` / `MindeesRuntimeBridgeTests` on an
+> **iOS Simulator** (`xcodebuild test`). What is **not** yet verified: physical-device
+> smoke execution or app-store packaging. Not a production host.
 
 A reference iOS host that replays the MindeesNative **native command stream** (from
 `@mindees/renderer`'s `createNativeCommandBackend()`) into UIKit views. It
@@ -19,25 +18,30 @@ specifies and tests (Phase 8B).
 ```text
 Package.swift
 Sources/MindeesNativeHost/
-  NativeCommand.swift     # Codable wire model (NativeCommand / NativePropValue / NativeNodeId)
-  MindeesNativeHost.swift # generic host: applies + strictly validates the stream; HostRenderer protocol
-  ModelRenderer.swift     # in-memory renderer (no UIKit) — used by `swift test`
-  UIKitRenderer.swift     # UIView renderer (the device-facing layer; #if canImport(UIKit))
+  NativeCommand.swift        # Codable wire model (NativeCommand / NativePropValue / NativeNodeId)
+  MindeesNativeHost.swift    # generic host: applies + strictly validates the stream
+  MindeesRuntimeBridge.swift # JavaScriptCore runtime bridge + generic bridge contract
+  ModelRenderer.swift        # in-memory renderer (no UIKit) - used by swift test
+  UIKitRenderer.swift        # UIView renderer (the device-facing layer; #if canImport(UIKit))
 Tests/MindeesNativeHostTests/
-  MindeesNativeHostTests.swift  # mirrors the TS conformance suite (uses ModelRenderer)
+  MindeesNativeHostTests.swift        # mirrors the TS conformance suite
+  MindeesRuntimeBridgeTests.swift     # JSCore bridge lifecycle + counter app tests
+  UIKitRenderTests.swift              # real UIView render assertions on iOS Simulator
 ```
 
-## Build + test (no device needed)
+## Build + test
 
 ```sh
 cd examples/native-hosts/ios
 swift build
-swift test     # exercises the apply + strict-validation logic via ModelRenderer
+swift test
 ```
 
-`swift test` runs the host's command-apply and validation logic on any platform
-(macOS/Linux) — no simulator. `UIKitRenderer` is conditionally compiled
-(`#if canImport(UIKit)`), so it only participates when building for iOS in Xcode.
+`swift test` runs the host's command-apply and validation logic via
+`ModelRenderer`, plus the JavaScriptCore bridge lifecycle and counter-app flow on
+macOS. `UIKitRenderer` is conditionally compiled (`#if canImport(UIKit)`), so the
+real UIKit hierarchy and native `UIButton` press smoke test run through the
+workflow's iOS Simulator `xcodebuild test` step.
 
 ## Use it on a device
 
@@ -45,27 +49,41 @@ swift test     # exercises the apply + strict-validation logic via ModelRenderer
 import MindeesNativeHost
 import UIKit
 
-let container = UIView()                 // your root view
+let container = UIView()
 let renderer = UIKitRenderer()
+var bridge: MindeesRuntimeBridge<UIKitRenderer>!
+
 let host = MindeesNativeHost(
     rootId: "host-root",
     root: container,
     renderer: renderer,
-    onEvent: { handlerId in bridge.dispatchEvent(handlerId) } // → backend.dispatchEvent
+    onEvent: { handlerId in
+        try? bridge.dispatchEvent(handlerId: handlerId) // -> MindeesApp.dispatchEvent
+    }
 )
 
-// each batch from the JS side (JSON over your bridge):
-let commands = try JSONDecoder().decode([NativeCommand].self, from: jsonData)
-try host.apply(commands)
+bridge = MindeesRuntimeBridge(
+    host: host,
+    runtime: JavaScriptCoreMindeesRuntime(source: appSource)
+)
+
+try bridge.start()
 ```
+
+The embedded script must expose `globalThis.MindeesApp = { start, dispatchEvent }`.
+During `start()`, JavaScript sends serialized command batches through
+`MindeesHost.emit(JSON.stringify(commands))`; native `press` callbacks call
+`dispatchEvent(handlerId)` back into the same runtime.
 
 ## Status
 
-- ✅ **Phase 8C** — implements the 8B conformance contract; CI compiles the package
-  for iOS (incl. `UIKitRenderer`) and runs `swift test`.
-- ✅ **Phase 8E** — `UIKitRenderTests` renders a command stream into real `UIView`s on
+- **Phase 8C** - implements the 8B conformance contract; CI compiles the package for
+  iOS (incl. `UIKitRenderer`) and runs `swift test`.
+- **Phase 8E** - `UIKitRenderTests` renders a command stream into real `UIView`s on
   an iOS Simulator (`xcodebuild test`) and asserts the hierarchy + updates + disposal.
-- 🔬 **Phase 8F** — a full app on a physical device over an embedded JS engine /
-  JS↔native bridge. Not done; the bridge transport is out of scope here.
-- The tag→view mapping and prop application are an intentional MVP — extend
-  `UIKitRenderer.makeElement` / `setProp` for a real design system.
+- **Phase 8F-C** - `MindeesRuntimeBridge` + `JavaScriptCoreMindeesRuntime` embed a JS
+  counter app, apply emitted command batches, and route a native `UIButton` press back
+  into `MindeesApp.dispatchEvent(handlerId)` in the iOS Simulator test.
+- Physical-device smoke execution is still pending. The tag-to-view mapping and prop
+  application are an intentional MVP - extend `UIKitRenderer.makeElement` / `setProp`
+  for a real design system.
