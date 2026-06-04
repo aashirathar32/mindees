@@ -92,6 +92,7 @@ for (const bench of cases) {
   const medianMs = median(durations)
   const minMs = Math.min(...durations)
   const maxMs = Math.max(...durations)
+  const safeMedianMs = Math.max(medianMs, Number.EPSILON)
   results.push({
     id: bench.id,
     packageName: bench.packageName,
@@ -101,7 +102,7 @@ for (const bench of cases) {
     medianMs,
     minMs,
     maxMs,
-    opsPerSecond: iterations / (medianMs / 1000),
+    opsPerSecond: iterations / (safeMedianMs / 1000),
     note,
   })
 }
