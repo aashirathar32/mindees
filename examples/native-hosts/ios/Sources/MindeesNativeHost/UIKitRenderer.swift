@@ -6,7 +6,7 @@
 //  platforms without UIKit. Tag mapping + prop application are intentionally minimal
 //  (an MVP) — extend `applyProp` / `makeElement` for your design system.
 //
-//  ⚠️ Authored, not yet compiled/run by the maintainers — see Package.swift.
+//  CI-verified by the native iOS workflow.
 //
 
 #if canImport(UIKit)

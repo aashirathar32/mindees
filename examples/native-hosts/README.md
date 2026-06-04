@@ -6,9 +6,10 @@
 > `native-protocol.ts`). In CI they **compile + pass their conformance cores** (macOS
 > for iOS, Linux+SDK for Android — Phase 8C/8D) **and render the command stream into
 > correct native view trees on the platform runtime** (iOS Simulator XCTest; Android
-> Robolectric, incl. click dispatch — Phase 8E). What's **not** done: a full app on a
-> physical device over an embedded JS engine / JS↔native bridge (Phase 8F). Not
-> production hosts.
+> Robolectric, incl. click dispatch — Phase 8E). Android also has a runnable example
+> app that embeds QuickJS and speaks the JS↔native command bridge; CI assembles the
+> APK and unit-tests the bridge, but does not yet run it on an emulator/physical
+> device. Not production hosts.
 
 ## What this is
 
@@ -85,9 +86,11 @@ renderer, and each is **compiled + its core tested in CI**:
 | iOS host project (`ios/`) — compiles + conformance core | ✅ verified in CI (macOS; Phase 8C) |
 | Android host project (`android/`) — compiles + conformance core | ✅ verified in CI (Linux; Phase 8D) |
 | Hosts **render the command stream into correct native view trees** | ✅ verified in CI (iOS Simulator XCTest; Android Robolectric, incl. click dispatch; Phase 8E) |
-| Full app **on a physical device** (embedded JS engine + JS↔native bridge) | ⏳ Phase 8F |
+| Android example app (embedded QuickJS + JS↔native command bridge) | 🧪 Phase 8F-A; CI unit-tests bridge + assembles APK |
+| Full app **on a physical device** (emulator/device smoke + iOS bridge parity) | ⏳ Phase 8F |
 
 **You cannot build a real mobile app with MindeesNative today.** The host projects
 compile, pass their conformance cores, and are verified to render the command stream
-into correct native view trees in CI — but **there is no embedded JS engine / bridge
-running a reactive app on a physical device yet** (Phase 8F).
+into correct native view trees in CI. Android now has an embedded-QuickJS example
+app and bridge, but **there is no emulator/physical-device proof or iOS equivalent
+yet** (the rest of Phase 8F).
