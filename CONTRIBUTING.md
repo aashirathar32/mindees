@@ -54,6 +54,7 @@ after Corepack has made `pnpm` available on PATH.
 | `pnpm format` | Auto-formats the codebase. |
 | `pnpm typecheck` | Type-checks all packages under `strict`. |
 | `pnpm check:exports` | Verifies built package export/bin targets and imports each public specifier from its owning package directory. |
+| `pnpm benchmark` | Builds packages, then records non-gating benchmark evidence for implemented hot paths. |
 | `pnpm changeset` | Records a changeset for your change (see Releasing). |
 
 > Exact task wiring lives in `turbo.json` and the root `package.json`.
