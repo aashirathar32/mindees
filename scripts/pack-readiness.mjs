@@ -197,7 +197,7 @@ function validatePackedFiles(packageName, manifest, entries) {
     if (!entries.has(path)) failures.push(`${packageName}: tarball is missing export ${target}`)
   }
 
-  for (const [binName, target] of Object.entries(manifest.bin ?? {})) {
+  for (const [binName, target] of Object.entries(normalizeBinTargets(packageName, manifest.bin))) {
     const path = archivePath(String(target))
     if (!entries.has(path)) failures.push(`${packageName}: tarball is missing bin ${binName}`)
   }
@@ -320,6 +320,15 @@ function collectExportTargets(value, targets = new Set()) {
 
 function archivePath(target) {
   return `package/${target.replace(/^\.\//, '')}`
+}
+
+function normalizeBinTargets(packageName, binField) {
+  if (typeof binField === 'string') return { [packageName]: binField }
+  if (binField === undefined) return {}
+  if (isPlainObject(binField)) return binField
+
+  failures.push(`${packageName}: manifest bin must be a string or object`)
+  return {}
 }
 
 function isPlainObject(value) {
