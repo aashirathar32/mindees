@@ -8,8 +8,9 @@
 > the command stream into correct native view trees on the platform runtime** (iOS
 > Simulator XCTest; Android Robolectric, incl. click dispatch - Phase 8E). Android has
 > a runnable QuickJS example app with an emulator smoke test; iOS has a JavaScriptCore
-> bridge that renders the same counter shape and handles a native `UIButton` press in
-> the iOS Simulator. Physical-device proof is still pending. Not production hosts.
+> bridge that renders the same counter shape and handles a `UIButton`
+> `.touchUpInside` target/action callback in the iOS Simulator. Physical-device proof
+> is still pending. Not production hosts.
 
 ## What this is
 

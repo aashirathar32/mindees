@@ -104,7 +104,7 @@ final class MindeesRuntimeBridgeTests: XCTestCase {
     #endif
 
     #if canImport(UIKit) && canImport(JavaScriptCore)
-    func testJavaScriptCoreRuntimeHandlesUIKitButtonPressOnSimulator() throws {
+    func testJavaScriptCoreRuntimeHandlesUIKitButtonTargetActionOnSimulator() throws {
         let container = UIView()
         let renderer = UIKitRenderer()
         var bridge: MindeesRuntimeBridge<UIKitRenderer>!
@@ -128,9 +128,33 @@ final class MindeesRuntimeBridgeTests: XCTestCase {
         XCTAssertEqual(label.text, "Count: 0")
         XCTAssertEqual(button.title(for: .normal), "Increment")
 
-        button.sendActions(for: .touchUpInside)
+        try invokeTouchUpInsideTargetAction(on: button)
 
         XCTAssertEqual(label.text, "Count: 1")
+    }
+
+    private func invokeTouchUpInsideTargetAction(on control: UIControl) throws {
+        var invokedActionCount = 0
+
+        for target in control.allTargets {
+            let targetObject = target.base
+            let actions = control.actions(forTarget: targetObject, forControlEvent: .touchUpInside) ?? []
+            for actionName in actions {
+                let selector = NSSelectorFromString(actionName)
+                let responder = try XCTUnwrap(
+                    targetObject as? NSObject,
+                    "touchUpInside target must be NSObject-backed so hostless XCTest can invoke it"
+                )
+                guard responder.responds(to: selector) else {
+                    XCTFail("touchUpInside target does not respond to \(actionName)")
+                    continue
+                }
+                _ = responder.perform(selector)
+                invokedActionCount += 1
+            }
+        }
+
+        XCTAssertEqual(invokedActionCount, 1)
     }
     #endif
 

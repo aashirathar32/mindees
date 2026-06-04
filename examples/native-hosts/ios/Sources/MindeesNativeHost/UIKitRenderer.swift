@@ -135,12 +135,13 @@ private final class TapForwarder {
 }
 
 /// Bridges a UIControl touch-up event to the same `press` callback.
-private final class ControlForwarder {
+private final class ControlForwarder: NSObject {
     static var assocKey: UInt8 = 0
     private let fire: () -> Void
 
     init(_ fire: @escaping () -> Void) {
         self.fire = fire
+        super.init()
     }
 
     @objc func handlePress() { fire() }

@@ -249,7 +249,7 @@ upgrades).
 - ✅ **Phase 8C / 8D** — **iOS & Android host projects** ([examples/native-hosts/](./examples/native-hosts/)) compile + pass their conformance cores in CI (macOS runner for iOS; Linux + Android SDK for Android)
 - ✅ **Phase 8E** — both hosts **render** the command stream into correct native view trees, verified in CI (iOS Simulator XCTest; Android Robolectric, incl. click dispatch)
 - 🧪 **Phase 8F-A/B** — Android embedded-runtime example app: QuickJS + JS↔native command bridge, APK assembly, and emulator-connected smoke test in CI
-- 🧪 **Phase 8F-C** - iOS embedded-runtime bridge: JavaScriptCore + JS<->native command bridge, model bridge tests, and iOS Simulator `UIButton` smoke test in CI
+- 🧪 **Phase 8F-C** - iOS embedded-runtime bridge: JavaScriptCore + JS<->native command bridge, model bridge tests, and iOS Simulator `UIButton` target/action smoke test in CI
 - ✅ **Phase 9A** — Pulse **signed OTA core**: hash-addressed manifest + Ed25519 signing/verify (threshold + key rotation, pure-JS `@noble`) + content-addressed store + an update client with atomic generations & crash-loop rollback
 - ✅ **Phase 9B** — Pulse **differential downloads**: a zero-dep pure-TS byte-level delta codec (`diff`/`applyDelta`) so a changed asset ships as just its delta against a stored base, verified by the existing SHA-256 gate with a full-fetch fallback
 - ✅ **Phase 9C** — Pulse **reference update server**: a pure, capability-injected `createUpdateServer` (channel selection, staged rollout, anti-downgrade, freeze, rollback directives, content-addressed asset serving; never signs) + a runnable `node:http` adapter example

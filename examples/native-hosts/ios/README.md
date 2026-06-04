@@ -40,8 +40,10 @@ swift test
 `swift test` runs the host's command-apply and validation logic via
 `ModelRenderer`, plus the JavaScriptCore bridge lifecycle and counter-app flow on
 macOS. `UIKitRenderer` is conditionally compiled (`#if canImport(UIKit)`), so the
-real UIKit hierarchy and native `UIButton` press smoke test run through the
-workflow's iOS Simulator `xcodebuild test` step.
+real UIKit hierarchy and `UIButton` target/action bridge smoke test run through the
+workflow's iOS Simulator `xcodebuild test` step. The simulator test runs as a
+hostless XCTest bundle, so it invokes the registered `.touchUpInside` target/action
+callback directly rather than synthesizing a full app-hosted touch event.
 
 ## Use it on a device
 
@@ -82,8 +84,9 @@ During `start()`, JavaScript sends serialized command batches through
 - **Phase 8E** - `UIKitRenderTests` renders a command stream into real `UIView`s on
   an iOS Simulator (`xcodebuild test`) and asserts the hierarchy + updates + disposal.
 - **Phase 8F-C** - `MindeesRuntimeBridge` + `JavaScriptCoreMindeesRuntime` embed a JS
-  counter app, apply emitted command batches, and route a native `UIButton` press back
-  into `MindeesApp.dispatchEvent(handlerId)` in the iOS Simulator test.
+  counter app, apply emitted command batches, and route a `UIButton` `.touchUpInside`
+  target/action callback back into `MindeesApp.dispatchEvent(handlerId)` in the iOS
+  Simulator test.
 - Physical-device smoke execution is still pending. The tag-to-view mapping and prop
   application are an intentional MVP - extend `UIKitRenderer.makeElement` / `setProp`
   for a real design system.
