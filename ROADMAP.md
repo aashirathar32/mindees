@@ -73,10 +73,18 @@ See [STATUS.md](./STATUS.md) for current maturity.
     `android.view` on the JVM — incl. click dispatch via `performClick()`). Both
     decode the JSON wire format and assert the resulting hierarchy + updates +
     disposal. (Proves correct native rendering; not yet pixels on a physical device.)
-  - [ ] **Phase 8F — End-to-end native example app**
+  - [~] **Phase 8F — End-to-end native example app**
     A runnable native example that renders on a real device/emulator over a real
     JS↔native bridge (embedding a JS engine to run the reactive app on-device) —
-    the step that makes a native MindeesNative app real end to end.
+    the step that makes a native MindeesNative app real end to end. Current
+    sub-status:
+    - [x] **Phase 8F-A — Android embedded-runtime example.** A Gradle application
+      module (`examples/native-hosts/android/mindees-example-app`) embeds Cash App
+      QuickJS, exposes `MindeesHost.emit(json)` for command batches, routes native
+      `press` callbacks back to `MindeesApp.dispatchEvent(handlerId)`, unit-tests
+      the bridge contract, and assembles an APK in Android CI.
+    - [ ] Emulator/physical-device smoke execution for the Android app.
+    - [ ] iOS embedded-runtime bridge/example parity.
 - **Phase 9 — `@mindees/updates` (Pulse): signed differential OTA + SDUI**
   Ship new JS + assets to installed apps with no app-store release, safely.
   Sub-phased so each step is real and tested:

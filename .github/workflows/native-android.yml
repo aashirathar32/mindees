@@ -3,8 +3,9 @@ name: Native Android host
 # Compiles + tests the reference Android host (examples/native-hosts/android) so the
 # "authored" Kotlin code is actually verified by CI — the project's dev/CI has no
 # Android toolchain locally, so this Linux runner (with the Android SDK) is the
-# source of truth for it. Path-filtered; not a required check. On-device UI
-# rendering (emulator instrumented tests) remains a further step.
+# source of truth for it. Path-filtered; not a required check. It also compiles a
+# runnable Android example app with an embedded QuickJS bridge; emulator/physical
+# device smoke execution remains a further step.
 
 on:
   push:
@@ -64,5 +65,11 @@ jobs:
       - name: Unit test (JVM core)
         run: ./gradlew :mindees-host:test --no-daemon --stacktrace
 
+      - name: Unit test example bridge
+        run: ./gradlew :mindees-example-app:testDebugUnitTest --no-daemon --stacktrace
+
       - name: Assemble library (compiles AndroidViewRenderer)
         run: ./gradlew :mindees-host:assembleDebug --no-daemon --stacktrace
+
+      - name: Assemble example app (embeds QuickJS bridge)
+        run: ./gradlew :mindees-example-app:assembleDebug --no-daemon --stacktrace
